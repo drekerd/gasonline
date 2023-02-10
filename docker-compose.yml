@@ -1,0 +1,25 @@
+version: '3.7'
+
+networks:
+  gasonline_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.1/16
+
+services:
+  db:
+    image: mongo:5.0.3
+    container_name: gasonline_db
+    # volumes:
+    #   - ./mongo-volume:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/ --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    ports:
+      - '27020:27017'
+    networks:
+      - gasonline_network
