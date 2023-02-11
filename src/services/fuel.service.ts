@@ -10,6 +10,7 @@ export class Fuel {
   price: number;
   fuel: string;
   lastUpdated: Date;
+  city: string;
 }
 
 export class FuelResult {
@@ -57,10 +58,17 @@ export class FuelService {
       fuelDto.price = parseFloat(fuel.Preco.replace(',', '.'));
       fuelDto.fuel = fuel.Combustivel;
       fuelDto.lastUpdated = fuel.DataAtualizacao;
+      fuelDto.city = fuel.Municipio;
+
+      // this.fuelRepository.
 
       this.fuelRepository.createFuel(fuelDto);
     }
 
     return Promise.resolve(true);
+  }
+
+  findById(id:string){
+    this.fuelRepository.getFuelById(id)
   }
 }

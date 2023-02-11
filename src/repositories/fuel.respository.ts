@@ -10,6 +10,7 @@ export class FuelDto {
   price: number;
   fuel: string;
   lastUpdated: Date;
+  city: string;
 }
 
 @Injectable()
@@ -28,6 +29,10 @@ export class FuelRepository {
 
     console.log(createdFuel);
     return createdFuel.save();
+  }
+
+  getFuelById(id: string): Promise<any> {
+    return this.fuelModel.findById({ id: id }).exec();
   }
 
   async getAllExercises(): Promise<FuelDocument[]> {

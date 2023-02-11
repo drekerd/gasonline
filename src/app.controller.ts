@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Param, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { FuelService } from './services/fuel.service';
 
@@ -17,5 +17,10 @@ export class AppController {
   @Post()
   updateFuelDatabase(): Promise<any> {
     return this.fuelService.createFuel();
+  }
+
+  @Get('fuel/:id')
+  findFuelById(@Param('id') id: string): Promise<any> {
+    return this.fuelService.findById(id);
   }
 }
