@@ -1,74 +1,97 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
-import { firstValueFrom } from 'rxjs';
-import { FuelDto, FuelRepository } from 'src/repositories/fuel.respository';
-
-export class Fuel {
-  id: string;
-  name: string;
-  stationId: number;
-  price: number;
-  fuel: string;
-  lastUpdated: Date;
-  city: string;
-}
-
-export class FuelResult {
-  status: boolean;
-  mensagem: string;
-  resultado: [];
-}
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Fuel } from 'src/dto/fuel.dto';
+import { FuelRepository } from 'src/repositories/fuel.repository';
+import { FuelPriceRepository } from 'src/repositories/price.repository';
+import { FuelPrice } from 'src/schemas/fuel-price.schema';
 
 @Injectable()
 export class FuelService {
   constructor(
     private readonly fuelRepository: FuelRepository,
+    private readonly fuelPriceRepository: FuelPriceRepository,
     private readonly httpService: HttpService,
   ) {}
 
-  async createFuel(): Promise<any> {
-    const fuelResponse = await firstValueFrom(
-      this.httpService.get(
-        'https://precoscombustiveis.dgeg.gov.pt/api/PrecoComb/PesquisarPostos?idsTiposComb=2115%2C1143%2C1141%2C1142%2C1120%2C3400%2C3210%2C3205%2C3405%2C3201%2C2150%2C2155%2C2105%2C2101&idMarca=&idTipoPosto=&idDistrito=13&idsMunicipios=198&qtdPorPagina=500&pagina=1',
-        {
-          headers: {
-            accept: '*/*',
-            'accept-language':
-              'en-US,en;q=0.9,pt-PT;q=0.8,pt-BR;q=0.7,pt;q=0.6',
-            'sec-ch-ua':
-              '"Chromium";v="110", "Not A(Brand";v="24", "Google Chrome";v="110"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Linux"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'x-requested-with': 'XMLHttpRequest',
-          },
-        },
-      ),
-    );
+  /**
+   * This method was changed after getting services API access.
+   * Update was no longer necessary unless type of fuel name changes.
+   * I can revise a strategy to update after some time if necessary
+   * @param fuels
+   * @returns
+   */
+  async createOrUpdateFuel(fuels: Fuel[]): Promise<any> {
+    try {
+      for (const fuel of fuels) {
+        const fuelExist = await this.fuelRepository.getFuelById(
+          fuel.externalId,
+        );
 
-    const result = fuelResponse.data.resultado;
+        console.log('fuel Exist', fuelExist);
 
-    for (const fuel of result) {
-      const fuelDto = new FuelDto();
-      fuelDto.id = fuel.Nome + '_' + fuel.Combustivel;
-      fuelDto.name = fuel.Nome;
-      fuelDto.stationId = fuel.Id;
-      fuelDto.price = parseFloat(fuel.Preco.replace(',', '.'));
-      fuelDto.fuel = fuel.Combustivel;
-      fuelDto.lastUpdated = fuel.DataAtualizacao;
-      fuelDto.city = fuel.Municipio;
+        if (fuelExist) {
+          this.fuelRepository.updateFuel(fuel);
+        } else {
+          this.fuelRepository.createFuel(fuel);
+        }
+      }
 
-      // this.fuelRepository.
+      return Promise.resolve(true);
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR, {
+        cause: new Error(err),
+      });
+    }
+  }
 
-      this.fuelRepository.createFuel(fuelDto);
+  async createOrUpdateFuelPrice(fuelsPrice: FuelPrice[]): Promise<any> {
+    console.log('cona');
+    for (const fuelPrice of fuelsPrice) {
+      this.fuelPriceRepository.createFuelPrice(fuelPrice);
     }
 
     return Promise.resolve(true);
   }
 
-  findById(id:string){
-    this.fuelRepository.getFuelById(id)
+  async findCheapestFuelByCity(city: string, typeOfFuel: string) {
+    const fuels = await this.fuelRepository.findAllByCityAndTypeOfFuel(
+      city,
+      typeOfFuel,
+    );
+
+    return '';
+  }
+
+  findById(id: number): Promise<any> {
+    return this.fuelRepository.getFuelById(id);
+  }
+
+  async findAllByCity(city: string): Promise<Fuel[]> {
+    return await this.fuelRepository.findAllByCity(city);
+  }
+
+  async getFuelPricesByFuelAndStationExternalId(
+    stationExternalId: number,
+    fuelExternalId: number,
+  ) {
+    return this.fuelPriceRepository.getFuelPricesByFuelAndStationExternalId(
+      stationExternalId,
+      fuelExternalId,
+    );
+  }
+
+  findFiveCheapestFuels(fuels) {
+    fuels.sort(function (a, b) {
+      if (a.price.price < b.price.price) {
+        return -1;
+      }
+      if (a.price.price > b.price.price) {
+        return 1;
+      }
+      return 0;
+    });
+
+    return fuels.slice(0, 5);
   }
 }

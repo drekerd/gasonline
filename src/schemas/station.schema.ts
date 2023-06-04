@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
 export type StationDocument = Station & Document;
 
@@ -11,56 +12,88 @@ export class Station {
   name: string;
 
   @Prop({ type: String, required: true })
+  status: string;
+
+  @Prop({ type: String, required: true })
+  registryDate: string;
+
+  @Prop({ type: String, required: true })
+  entityName: string;
+
+  @Prop({ type: String, required: true })
   brand: string;
 
   @Prop({ type: String, required: true })
-  utilization: string;
+  district: string;
 
   @Prop({ type: String, required: true })
-  typeOfStation: string;
+  city: string;
 
-  @Prop({ type: [String], required: true })
-  typesOfFuel: string[];
+  @Prop({ type: String, required: true })
+  parish: string;
 
-  @Prop({
-    type: {
-      district: { type: String, required: true },
-      city: { type: String, required: true },
-      street: { type: String, required: true },
-      parish: { type: String, required: true },
-      postalCode: { type: String, required: true },
-      latitude: { type: Number, required: true },
-      longitude: { type: Number, required: true },
-      orientation: { type: String, required: true },
-    },
-    required: true,
-  })
-  address: {
-    district: string;
-    city: string;
-    street: string;
-    parish: string;
-    postalCode: string;
-    latitude: number;
-    longitude: number;
-    orientation: string;
-  };
+  @Prop({ type: String, required: true })
+  address: string;
 
-  @Prop({
-    type: {
-      workingDays: { type: String, required: true },
-      saturday: { type: String, required: true },
-      sunday: { type: String, required: true },
-      holyday: { type: String, required: true },
-    },
-    required: true,
-  })
-  openingHours: {
-    workingDays: string;
-    saturday: string;
-    sunday: string;
-    holyday: string;
-  };
+  @Prop({ type: String })
+  postalCode: string;
+
+  @Prop({ type: String })
+  orientation: string;
+
+  @Prop({ type: Number, required: true })
+  latitude: number;
+
+  @Prop({ type: Number, required: true })
+  longitude: number;
+
+  @Prop({ type: String, required: true })
+  use: string;
+
+  @Prop({ type: String, required: true })
+  type: string;
+
+  @Prop({ type: String })
+  observations: string;
+
+  @Prop({ type: String })
+  weekDaysSchedule: string;
+
+  @Prop({ type: String })
+  weekDaysOpeningHours: string;
+
+  @Prop({ type: String })
+  weekDaysClosingHours: string;
+
+  @Prop({ type: String })
+  saturdaySchedule: string;
+
+  @Prop({ type: String })
+  saturdayOpeningHours: string;
+
+  @Prop({ type: String })
+  saturdayClosingHours: string;
+
+  @Prop({ type: String })
+  sundaySchedule: string;
+
+  @Prop({ type: String })
+  sundayOpeningHours: string;
+
+  @Prop({ type: String })
+  sundayClosingHours: string;
+
+  @Prop({ type: String })
+  holidaySchedule: string;
+
+  @Prop({ type: String })
+  holidayOpeningHours: string;
+
+  @Prop({ type: String })
+  holidayClosingHours: string;
+
+  @Prop({ type: [Number], required: true })
+  fuels: number[];
 }
 
 export const StationSchema = SchemaFactory.createForClass(Station);
